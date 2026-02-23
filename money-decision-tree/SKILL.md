@@ -4,23 +4,42 @@ description: Chooses the safest network and custody approach for crypto payments
 compatibility: Works anywhere for planning. For execution, requires the payment skills plus network RPC access and appropriate tooling.
 metadata:
   author: money-skill-pack
-  version: 0.1.0
+  version: 0.1.1
   category: finance
   tags: [payments, custody, decision-tree, ethereum, solana, usdc]
 ---
 
 # Money decision tree
 
+## Linked skills and registries
+
+Use these links when reading this repo on GitHub.
+
+### Skills
+- EVM payments: [money-evm-payments/SKILL.md](../money-evm-payments/SKILL.md)
+- EVM custody: [money-evm-custody/SKILL.md](../money-evm-custody/SKILL.md)
+- Solana payments: [money-solana-payments/SKILL.md](../money-solana-payments/SKILL.md)
+- Solana custody: [money-solana-custody/SKILL.md](../money-solana-custody/SKILL.md)
+- Receiving and reconciliation: [money-receiving-reconciliation/SKILL.md](../money-receiving-reconciliation/SKILL.md)
+
+### Token registries and cheatsheets
+- EVM native USDC addresses: [money-evm-payments/references/usdc-addresses.md](../money-evm-payments/references/usdc-addresses.md)
+- EVM cast cheatsheet: [money-evm-payments/references/cast-cheatsheet.md](../money-evm-payments/references/cast-cheatsheet.md)
+- Solana USDC mints: [money-solana-payments/references/usdc-mints.md](../money-solana-payments/references/usdc-mints.md)
+- Solana token account gotchas: [money-solana-payments/references/token-account-gotchas.md](../money-solana-payments/references/token-account-gotchas.md)
+- Solana CLI cheatsheet: [money-solana-payments/references/solana-cli-cheatsheet.md](../money-solana-payments/references/solana-cli-cheatsheet.md)
+
 ## Instructions
 
 Use this skill to route any money-related request to the right network and the right custody stack, then to the right execution skill.
 
 This skill is intentionally high-level. When it reaches an execution step, it should point to the appropriate focused skill:
-- EVM transfers: see `money-evm-payments`
-- Solana transfers: see `money-solana-payments`
-- EVM custody architecture: see `money-evm-custody`
-- Solana custody architecture: see `money-solana-custody`
-- Receiving and reconciliation: see `money-receiving-reconciliation`
+
+- EVM transfers: see [money-evm-payments](../money-evm-payments/SKILL.md)
+- Solana transfers: see [money-solana-payments](../money-solana-payments/SKILL.md)
+- EVM custody architecture: see [money-evm-custody](../money-evm-custody/SKILL.md)
+- Solana custody architecture: see [money-solana-custody](../money-solana-custody/SKILL.md)
+- Receiving and reconciliation: see [money-receiving-reconciliation](../money-receiving-reconciliation/SKILL.md)
 
 ## Step 1: Classify the request
 
@@ -36,7 +55,8 @@ Determine which category the user is asking for.
 3. Receiving and reconciliation
 - The user wants to detect payments, match invoices, confirm finality, handle partials, build a ledger.
 
-If unclear, ask one short question: "Is this about executing a transfer now, or designing custody and payments architecture?"
+If unclear, ask one short question:
+Is this about executing a transfer now, or designing custody and payments architecture?
 
 ## Step 2: Identify the network family
 
@@ -45,11 +65,11 @@ Do not guess. If the user did not specify the network, ask for it.
 - EVM networks include Ethereum mainnet and L2s like Arbitrum, OP Mainnet, Base, zkSync, Linea.
 - Solana networks are clusters: mainnet-beta, devnet, testnet.
 
-If the user says "USDC" but not the chain or cluster, stop and ask for the chain or cluster.
+If the user says USDC but not the chain or cluster, stop and ask for the chain or cluster.
 
 ## Step 3: Identify the risk profile
 
-Collect these facts and log them in your plan:
+Collect these facts and log them in your plan.
 
 - Value band: low, medium, high (define with org policy)
 - Frequency: one-off, occasional, frequent
@@ -102,12 +122,12 @@ Q4: Pure self-custody single-sig
 
 ## Step 6: Route to the correct focused skill
 
-- If network family is EVM and request is payment execution: use `money-evm-payments`.
-- If network family is Solana and request is payment execution: use `money-solana-payments`.
+- If network family is EVM and request is payment execution: use [money-evm-payments](../money-evm-payments/SKILL.md).
+- If network family is Solana and request is payment execution: use [money-solana-payments](../money-solana-payments/SKILL.md).
 - If request is custody and architecture:
-  - EVM: `money-evm-custody`
-  - Solana: `money-solana-custody`
-- If request is receiving and reconciliation: `money-receiving-reconciliation`
+  - EVM: [money-evm-custody](../money-evm-custody/SKILL.md)
+  - Solana: [money-solana-custody](../money-solana-custody/SKILL.md)
+- If request is receiving and reconciliation: use [money-receiving-reconciliation](../money-receiving-reconciliation/SKILL.md).
 
 ## Output format
 
@@ -123,21 +143,21 @@ Return a short plan with:
 Example 1: Small recurring payouts on Base by an autonomous agent
 - Network: EVM, Base
 - Custody: Safe treasury plus Privy ops wallet with spend limits
-- Next: `money-evm-custody` for architecture, then `money-evm-payments` for execution
+- Next: [money-evm-custody](../money-evm-custody/SKILL.md) for architecture, then [money-evm-payments](../money-evm-payments/SKILL.md) for execution
 
 Example 2: Team treasury on Solana with approvals
 - Network: Solana, mainnet-beta
 - Custody: Squads multisig treasury plus a low-balance ops wallet
-- Next: `money-solana-custody`
+- Next: [money-solana-custody](../money-solana-custody/SKILL.md)
 
-Example 3: User says "Send 12.34 USDC to this address"
+Example 3: User says Send 12.34 USDC to this address
 - Missing: chain
 - Action: ask which chain and whether recipient expects native USDC or a bridged variant
 
 ## Troubleshooting
 
 Skill triggers too often
-- Add exclusions to the description, such as "not for trading or DeFi".
+- Add exclusions to the description, such as not for trading or DeFi.
 - Make triggers more specific to sending, receiving, custody, treasury, or invoicing.
 
 User requests trading or investing advice
