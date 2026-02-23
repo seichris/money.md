@@ -94,6 +94,40 @@ On some chains there are multiple “USDC-like” tokens:
 
 ---
 
+
+
+## 2b) Moving funds between chains (bridging)
+
+**Rule:** Don’t bridge unless you explicitly need to. Prefer sending on the chain the recipient requests.
+
+### Bridging decision tree (ETH vs USDC)
+
+```
+Need to move value from Chain A → Chain B?
+│
+├─ Asset = USDC?
+│    │
+│    ├─ YES → If both chains support Circle CCTP:
+│    │           Prefer CCTP (burn on source, mint on destination; avoids wrapped/LP bridge risk).
+│    │        Else:
+│    │           Prefer the canonical bridge for the destination L2 (may produce bridged variants like USDC.e).
+│    │
+│    └─ NO (ETH) → Prefer canonical bridge or a reputable on-ramp/off-ramp that can deliver ETH on the destination chain.
+│
+└─ After bridging:
+     - Verify you received funds on the destination chain
+     - Verify the asset is the expected variant (native USDC vs bridged)
+     - Keep enough ETH for gas on the destination chain before attempting USDC transfers
+```
+
+### USDC variant warning (example: Arbitrum)
+Some L2s support both:
+- **Native USDC (`USDC`)** and
+- **Bridged USDC (`USDC.e`)** (a different token contract)
+
+You must confirm which one the receiver expects before you send.
+
+
 ## 3) Asset rules (ETH vs USDC)
 
 ### ETH
@@ -203,6 +237,20 @@ Avoid raw `$SENDER_PRIVATE_KEY` when possible:
 - Use hardware wallet (`--ledger` / `--trezor`)
 - Use remote signer (`--aws` / `--gcp` / `--turnkey`)
 
+### Cast signer options (quick reference)
+
+Foundry `cast` supports multiple signing modes; for agent systems, prefer **remote signers** to avoid raw keys on disk/env vars.
+
+- **Raw**: `--private-key` (last resort)
+- **Keystore**: `--keystore <path>` or `--account <name>` (+ `--password-file`)
+- **Hardware**: `--ledger` or `--trezor`
+- **Remote**:
+  - `--aws` (requires `AWS_KMS_KEY_ID`)
+  - `--gcp` (requires `GCP_PROJECT_ID`, `GCP_LOCATION`, `GCP_KEY_RING`, `GCP_KEY_NAME`, `GCP_KEY_VERSION`)
+  - `--turnkey` (requires `TURNKEY_API_PRIVATE_KEY`, `TURNKEY_ORGANIZATION_ID`, `TURNKEY_ADDRESS`)
+
+
+
 ---
 
 ## 6) Stack B — Safe Smart Account (multisig treasury)
@@ -303,6 +351,30 @@ Token: USDC (Circle native)
 Payment ID: inv_2026_02_23_001
 ```
 
+
+
+### Reconciling payments to invoices (EVM has no native memo)
+
+If you need to reliably match “a payment” to an invoice/order/user, you need a strategy beyond “look at the wallet balance”.
+
+Preferred options (in order):
+
+1. **Unique address per invoice**  
+   - Generate a fresh receive address for each invoice or customer.
+   - Easiest to reconcile; best for agents.
+
+2. **Smart-contract pay endpoint** (best when you control the app)  
+   - User calls `pay(invoiceId, amount, token)` and the contract emits an event with `invoiceId`.
+   - Most reliable at scale.
+
+3. **Unique-amount encoding** (last resort)  
+   - Add a tiny “invoice suffix” to the amount (e.g., 12.340017 USDC).
+   - Works poorly with rounding/partial payments; can confuse humans.
+
+4. **Off-chain payment_id only**  
+   - Only works if the payer can provide the tx hash back out-of-band.
+
+
 ### Confirming receipt
 - ETH: confirm the tx is mined and the value arrived
 - USDC: confirm a `Transfer` event from the correct token contract and amount
@@ -348,6 +420,21 @@ zkSync (324):     0x1d17CBcF0D6D143135aE902365D2E5e2A16538D4
 
 ---
 
+
+
+## 11b) Nonce, concurrency, and stuck transactions (agent operations)
+
+### Nonce locking (must-have for automated senders)
+- Use a **single-writer** model per `from` address (or a DB/distributed lock).
+- If multiple workers can send, implement a **nonce allocator** that hands out nonces atomically.
+- Always record `nonce` with `payment_id` so retries are safe and idempotent.
+
+### If a transaction is stuck (pending too long)
+- Don’t spam new nonces blindly.
+- Replace the pending tx **with the same nonce** and a higher fee (wallet/RPC must support replacement).
+- If you need to “cancel”, send a **0 ETH** transfer to yourself with the same nonce and higher fee.
+
+
 ## 12) Incident response (if something goes wrong)
 
 ### If the agent is compromised
@@ -375,9 +462,15 @@ Prefer `cast` by default. Alternatives when there’s a strong reason:
 ## 14) Reference URLs (copy/paste)
 
 ```text
-Foundry Cast docs:            https://getfoundry.sh/cast/
-Safe docs (Smart Accounts):   https://docs.safe.global/
-Circle USDC addresses:        https://developers.circle.com/stablecoins/usdc-contract-addresses
-Coinbase developer docs:      https://docs.cdp.coinbase.com/
-Privy docs:                   https://docs.privy.io/
+Foundry Cast docs:              https://getfoundry.sh/cast/
+Foundry Cast CLI reference:     https://getfoundry.sh/cast/reference/
+Safe docs (Smart Accounts):     https://docs.safe.global/
+Circle USDC addresses:          https://developers.circle.com/stablecoins/usdc-contract-addresses
+Circle CCTP (USDC bridging):    https://developers.circle.com/cctp
+Arbitrum USDC vs USDC.e:        https://docs.arbitrum.io/arbitrum-bridge/usdc-arbitrum-one
+Coinbase Prime withdrawals:     https://docs.cdp.coinbase.com/prime/concepts/transactions/withdrawals
+Coinbase Prime API reference:   https://docs.cdp.coinbase.com/api-reference/prime-api/
+Privy agentic wallets:          https://docs.privy.io/recipes/agent-integrations/agentic-wallets
+Privy OpenClaw guide:           https://privy.io/blog/securely-equipping-openclaw-agents-with-privy-wallets
 ```
+
