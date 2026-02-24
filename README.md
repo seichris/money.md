@@ -18,6 +18,7 @@ If you are not 100% sure which network or custody model to use, start here:
 - **Decision tree (entry point):** [money-decision-tree/SKILL.md](money-decision-tree/SKILL.md)
 
 That router will send you to the right focused skill:
+- Implement a paid HTTP service (x402 / HTTP 402): [money-x402-http-payments/SKILL.md](money-x402-http-payments/SKILL.md)
 - Execute a transfer on EVM: [money-evm-payments/SKILL.md](money-evm-payments/SKILL.md)
 - Execute a transfer on Solana: [money-solana-payments/SKILL.md](money-solana-payments/SKILL.md)
 - Design custody on EVM: [money-evm-custody/SKILL.md](money-evm-custody/SKILL.md)
@@ -31,6 +32,10 @@ That router will send you to the right focused skill:
 ### Router
 - [money-decision-tree/SKILL.md](money-decision-tree/SKILL.md)  
   High-level routing: EVM vs Solana, custody tradeoffs, and the next skill to load.
+
+### Paid HTTP services
+- [money-x402-http-payments/SKILL.md](money-x402-http-payments/SKILL.md)  
+  HTTP 402 (x402-style) payment challenge, on-chain proof verification, and idempotent access crediting.
 
 ### Payment execution
 - [money-evm-payments/SKILL.md](money-evm-payments/SKILL.md)  

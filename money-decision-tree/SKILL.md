@@ -16,6 +16,7 @@ metadata:
 Use these links when reading this repo on GitHub.
 
 ### Skills
+- HTTP 402 paid services: [money-x402-http-payments/SKILL.md](../money-x402-http-payments/SKILL.md)
 - EVM payments: [money-evm-payments/SKILL.md](../money-evm-payments/SKILL.md)
 - EVM custody: [money-evm-custody/SKILL.md](../money-evm-custody/SKILL.md)
 - Solana payments: [money-solana-payments/SKILL.md](../money-solana-payments/SKILL.md)
@@ -44,6 +45,10 @@ This skill is intentionally high-level. When it reaches an execution step, it sh
 ## Step 1: Classify the request
 
 Determine which category the user is asking for.
+
+0. Paid HTTP service (x402 / HTTP 402)
+- The user wants a paid API, paid content, or "pay then retry" flow over HTTP.
+- The user mentions x402, HTTP 402, paywalls, metered billing over HTTP, or payment challenges and proofs.
 
 1. Payment execution
 - The user wants to send or receive ETH, SOL, or USDC now.
@@ -122,6 +127,7 @@ Q4: Pure self-custody single-sig
 
 ## Step 6: Route to the correct focused skill
 
+- If request is a paid HTTP service (x402 / HTTP 402): use [money-x402-http-payments](../money-x402-http-payments/SKILL.md), then route to settlement and reconciliation skills as needed.
 - If network family is EVM and request is payment execution: use [money-evm-payments](../money-evm-payments/SKILL.md).
 - If network family is Solana and request is payment execution: use [money-solana-payments](../money-solana-payments/SKILL.md).
 - If request is custody and architecture:
